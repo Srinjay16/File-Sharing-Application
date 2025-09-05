@@ -7,8 +7,10 @@ from flask_cors import CORS
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Create the Flask app
-app = Flask(__name__)
+# Create the Flask app with template and static folders
+app = Flask(__name__, 
+            template_folder='templates',
+            static_folder='static')
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 
 # Enable CORS for all routes

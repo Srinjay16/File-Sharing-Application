@@ -12,6 +12,12 @@ file_manager = FileManager()
 peer_discovery = PeerDiscovery()
 
 @app.route('/')
+def index():
+    """Main web interface"""
+    from flask import render_template
+    return render_template('index.html')
+
+@app.route('/api')
 def api_info():
     """API information endpoint"""
     return jsonify({
