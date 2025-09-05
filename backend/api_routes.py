@@ -167,9 +167,9 @@ def api_add_peer():
     """Add a new peer"""
     try:
         data = request.get_json()
-        peer_ip = data.get('ip', '').strip()
-        peer_port = data.get('port', '').strip()
-        peer_name = data.get('name', '').strip()
+        peer_ip = str(data.get('ip', '')).strip()
+        peer_port = data.get('port', '')
+        peer_name = str(data.get('name', '')).strip()
         
         if not peer_ip or not peer_port:
             return jsonify({
