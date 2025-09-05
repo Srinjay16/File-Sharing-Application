@@ -148,13 +148,25 @@ function showError(element, message) {
 }
 
 // Page navigation
-function showPage(pageName) {
+function showPage(pageName, clickedElement = null) {
     // Update active navigation
     document.querySelectorAll('.list-group-item').forEach(item => {
         item.classList.remove('active');
     });
     
-    event.target.classList.add('active');
+    // Find and activate the correct nav item
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    } else {
+        // Find nav item by page name
+        const navItems = document.querySelectorAll('.list-group-item');
+        navItems.forEach(item => {
+            if (item.textContent.trim().toLowerCase().includes(pageName)) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
     currentPage = pageName;
     
     // Load page content
@@ -314,9 +326,15 @@ async function downloadFromPeer(peerId, filename) {
     try {
         showToast('Download', `Starting download of "${filename}" from peer...`, 'info');
         
+        // Add to transfer history
+        addToTransferHistory(filename, 'download', peerId, 'Unknown', 'in_progress');
+        
         const response = await api.downloadFromPeer(peerId, filename);
         if (response.success) {
             showToast('Success', response.message, 'success');
+            
+            // Update transfer history
+            addToTransferHistory(filename, 'download', peerId, 'Unknown', 'completed');
             
             // Reload files page to show the new file
             setTimeout(() => {
@@ -327,10 +345,31 @@ async function downloadFromPeer(peerId, filename) {
             }, 1000);
         } else {
             showToast('Error', response.message, 'error');
+            addToTransferHistory(filename, 'download', peerId, 'Unknown', 'failed');
         }
     } catch (error) {
         showToast('Error', 'Failed to download from peer: ' + error.message, 'error');
+        addToTransferHistory(filename, 'download', peerId, 'Unknown', 'failed');
     }
+}
+
+// Add transfer to history function
+function addToTransferHistory(filename, direction, peer, size, status) {
+    const history = JSON.parse(localStorage.getItem('transferHistory') || '[]');
+    const transfer = {
+        filename,
+        extension: '.' + filename.split('.').pop(),
+        direction,
+        peer,
+        size,
+        status,
+        timestamp: new Date().toISOString()
+    };
+    
+    history.unshift(transfer); // Add to beginning
+    if (history.length > 50) history.pop(); // Keep only last 50
+    
+    localStorage.setItem('transferHistory', JSON.stringify(history));
 }
 
 // Initialize tooltips

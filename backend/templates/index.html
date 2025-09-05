@@ -36,16 +36,16 @@
             <!-- Sidebar -->
             <div class="col-md-3">
                 <div class="list-group">
-                    <a href="#" class="list-group-item list-group-item-action active" onclick="showPage('dashboard')">
+                    <a href="#" class="list-group-item list-group-item-action active" onclick="showPage('dashboard', this)">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="showPage('files')">
+                    <a href="#" class="list-group-item list-group-item-action" onclick="showPage('files', this)">
                         <i class="bi bi-files"></i> My Files
                     </a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="showPage('peers')">
+                    <a href="#" class="list-group-item list-group-item-action" onclick="showPage('peers', this)">
                         <i class="bi bi-people"></i> Peers
                     </a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="showPage('transfers')">
+                    <a href="#" class="list-group-item list-group-item-action" onclick="showPage('transfers', this)">
                         <i class="bi bi-arrow-left-right"></i> Transfers
                     </a>
                 </div>
@@ -97,11 +97,25 @@
                     <form id="uploadForm" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="fileInput" class="form-label">Select File</label>
-                            <input type="file" class="form-control" id="fileInput" name="file" required>
-                            <div class="form-text">Maximum file size: 100MB</div>
+                            <input type="file" class="form-control" id="fileInput" name="file" required 
+                                   accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.mp3,.mp4,.avi,.mov,.mkv,.py,.js,.html,.css">
+                            <div class="form-text">
+                                <strong>Supported files:</strong> Documents, Images, Videos, Audio, Archives, Code files<br>
+                                <strong>Maximum size:</strong> 100MB
+                            </div>
                         </div>
                         <div class="progress mt-3" style="display: none;" id="uploadProgress">
-                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">
+                                <span class="progress-text">0%</span>
+                            </div>
+                        </div>
+                        <div class="upload-preview mt-3" id="uploadPreview" style="display: none;">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">File Preview</h6>
+                                    <div id="previewContent"></div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>

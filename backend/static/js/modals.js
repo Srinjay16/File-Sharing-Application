@@ -29,6 +29,9 @@ async function uploadFile() {
         if (response.success) {
             showToast('Success', response.message, 'success');
             
+            // Add to transfer history
+            addToTransferHistory(file.name, 'upload', 'Local', formatFileSize(file.size), 'completed');
+            
             // Hide modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
             modal.hide();
@@ -38,6 +41,9 @@ async function uploadFile() {
             progressDiv.style.display = 'none';
             progressBar.style.width = '0%';
             progressBar.textContent = '';
+            
+            // Hide preview
+            document.getElementById('uploadPreview').style.display = 'none';
             
             // Refresh current page if it's files page
             if (currentPage === 'files') {
@@ -205,8 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) {
-            const fileName = this.files[0].name;
-            const fileSize = formatFileSize(this.files[0].size);
+            const file = this.files[0];
+            const fileName = file.name;
+            const fileSize = formatFileSize(file.size);
+            const fileType = file.type;
             
             // Update drop zone if it exists
             const dropZone = document.querySelector('.drop-zone');
@@ -221,8 +229,52 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="text-muted">Click upload to continue</div>
                 `;
             }
+            
+            // Show file preview
+            showFilePreview(file);
         }
     });
+    
+    // File preview function
+    function showFilePreview(file) {
+        const previewDiv = document.getElementById('uploadPreview');
+        const previewContent = document.getElementById('previewContent');
+        
+        if (file.type.startsWith('image/') && file.size < 5 * 1024 * 1024) { // 5MB limit for preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContent.innerHTML = `
+                    <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;">
+                    <p class="mt-2 mb-0"><strong>${file.name}</strong> (${formatFileSize(file.size)})</p>
+                `;
+                previewDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type.startsWith('text/') && file.size < 1 * 1024 * 1024) { // 1MB limit for text preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result.substring(0, 500); // First 500 characters
+                previewContent.innerHTML = `
+                    <pre class="bg-dark p-2 rounded" style="max-height: 150px; overflow-y: auto; font-size: 0.8rem;">${text}${e.target.result.length > 500 ? '...' : ''}</pre>
+                    <p class="mt-2 mb-0"><strong>${file.name}</strong> (${formatFileSize(file.size)})</p>
+                `;
+                previewDiv.style.display = 'block';
+            };
+            reader.readAsText(file);
+        } else {
+            // Show file info for other types
+            previewContent.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi ${getFileIcon('.' + file.name.split('.').pop())} me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <strong>${file.name}</strong><br>
+                        <span class="text-muted">${formatFileSize(file.size)} • ${file.type || 'Unknown type'}</span>
+                    </div>
+                </div>
+            `;
+            previewDiv.style.display = 'block';
+        }
+    }
     
     // Initialize drag and drop after modal is shown
     const uploadModal = document.getElementById('uploadModal');

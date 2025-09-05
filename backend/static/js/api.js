@@ -3,7 +3,7 @@
  */
 
 class APIClient {
-    constructor(baseUrl = 'http://localhost:5000') {
+    constructor(baseUrl = '') {
         this.baseUrl = baseUrl;
     }
 
@@ -79,7 +79,7 @@ class APIClient {
                     reject(new Error('Upload failed'));
                 });
 
-                xhr.open('POST', `${this.baseUrl}/api/files/upload`);
+                xhr.open('POST', '/api/files/upload');
                 xhr.send(formData);
             });
         } catch (error) {
@@ -89,7 +89,7 @@ class APIClient {
     }
 
     async downloadFile(filename) {
-        const url = `${this.baseUrl}/api/files/download/${encodeURIComponent(filename)}`;
+        const url = `/api/files/download/${encodeURIComponent(filename)}`;
         window.open(url, '_blank');
     }
 

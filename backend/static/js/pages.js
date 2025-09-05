@@ -320,28 +320,116 @@ async function loadPeersPage() {
 async function loadTransfersPage() {
     const contentDiv = document.getElementById('pageContent');
     
+    // Get transfer history from localStorage
+    const transferHistory = JSON.parse(localStorage.getItem('transferHistory') || '[]');
+    
     const transfersHtml = `
         <div class="row">
             <div class="col-12">
-                <h2 class="mb-4">
-                    <i class="bi bi-arrow-left-right"></i> Transfers
-                </h2>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>
+                        <i class="bi bi-arrow-left-right"></i> Transfer Monitor
+                    </h2>
+                    <button class="btn btn-outline-primary" onclick="clearTransferHistory()">
+                        <i class="bi bi-trash"></i> Clear History
+                    </button>
+                </div>
             </div>
         </div>
         
-        <div class="text-center py-5">
-            <i class="bi bi-arrow-left-right" style="font-size: 5rem; opacity: 0.3;"></i>
-            <h4 class="mt-3 text-muted">Transfer Monitor</h4>
-            <p class="text-muted">Active file transfers will appear here when available.</p>
-            <div class="alert alert-info mt-4">
-                <i class="bi bi-info-circle"></i>
-                <strong>Coming Soon:</strong> Real-time transfer progress monitoring and history.
+        <!-- Active Transfers -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-activity"></i> Active Transfers
+                            <span class="badge bg-success ms-2" id="activeTransferCount">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body" id="activeTransfers">
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-check-circle" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <p class="mt-2">No active transfers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Transfer History -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> Transfer History
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        ${transferHistory.length > 0 ? `
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>File</th>
+                                            <th>Direction</th>
+                                            <th>Peer</th>
+                                            <th>Size</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${transferHistory.map(transfer => `
+                                            <tr>
+                                                <td>
+                                                    <i class="bi ${getFileIcon(transfer.extension)} me-2"></i>
+                                                    ${transfer.filename}
+                                                </td>
+                                                <td>
+                                                    <span class="badge ${transfer.direction === 'upload' ? 'bg-primary' : 'bg-success'}">
+                                                        <i class="bi ${transfer.direction === 'upload' ? 'bi-upload' : 'bi-download'}"></i>
+                                                        ${transfer.direction === 'upload' ? 'Upload' : 'Download'}
+                                                    </span>
+                                                </td>
+                                                <td>${transfer.peer || 'Local'}</td>
+                                                <td>${transfer.size}</td>
+                                                <td>
+                                                    <span class="badge ${transfer.status === 'completed' ? 'bg-success' : transfer.status === 'failed' ? 'bg-danger' : 'bg-warning'}">
+                                                        ${transfer.status}
+                                                    </span>
+                                                </td>
+                                                <td>${formatDate(transfer.timestamp)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-clock-history" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <h5 class="mt-3">No Transfer History</h5>
+                                <p>Start uploading or downloading files to see transfer history here.</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
             </div>
         </div>
     `;
     
     contentDiv.innerHTML = transfersHtml;
     contentDiv.classList.add('fade-in');
+}
+
+// Clear transfer history
+function clearTransferHistory() {
+    if (confirm('Are you sure you want to clear all transfer history?')) {
+        localStorage.removeItem('transferHistory');
+        loadTransfersPage();
+        showToast('Success', 'Transfer history cleared', 'success');
+    }
 }
 
 // View peer files
